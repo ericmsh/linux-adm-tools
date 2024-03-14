@@ -1,36 +1,63 @@
 ---
 - name: Resize root file system
-  hosts: localhost
-  user: root
+  hosts: all
+  vars:
+    device: /dev/sda
+    vg: vg01
+    lv: root
   tasks:
-    - name: Read device information (always use unit when probing)
-      community.general.parted:
-        device: /dev/sda
-        unit: s
-      register: sda_info
-  
+    - name: Check Disk size
+      shell: fdisk -l {{ device }}
+      register: fdisk_info
+
     - name: Output info
       debug:
-        var: sda_info
-  
+        msg: "{{ fdisk_info.stdout_lines[0] }}"
+
+    - name: Check / size
+      shell: df -h /
+      register: fs_info
+
+    - name: Output info
+      debug:
+        msg: "{{ fs_info.stdout_lines[:2] }}"
+
+    - name: Read device information (always use unit when probing)
+      community.general.parted:
+        device: "{{ device }}"
+        unit: GiB
+      register: dev_info
+
+    - name: Output info
+      debug:
+        var: dev_info
+
     - name: Extend an existing partition to fill all available space
       community.general.parted:
-        device: /dev/sda
-        number: "{{ sda_info.partitions | length }}"
+        device: "{{ device }}"
+        number: "{{ dev_info.partitions | length }}"
         part_start: "100%"
         resize: true
         state: present
 
-    - name: Extending the Volume Group and resize the pv
+    - name: Extending the Volume Group {{ vg }}  and resize the pv
       community.general.lvg:
-        vg: vg01
-        pvs: /dev/sda{{ sda_info.partitions | length }}
+        vg: "{{ vg }}"
+        pvs: "{{ device }}{{ dev_info.partitions | length }}"
         pvresize: yes
 
     - name: Increasing the filesystems
       community.general.lvol:
-        vg: vg01
-        lv: root
+        vg: "{{ vg }}"
+        lv: "{{ lv }}"
         size: +100%FREE
         resizefs: true
-  
+
+    - name: Check / size
+      shell: df -h /
+      register: fs_info
+
+    - name: Output info
+      debug:
+        msg: "{{ fs_info.stdout_lines[:2] }}"
+

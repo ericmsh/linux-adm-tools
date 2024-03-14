@@ -7,7 +7,7 @@ Linux Servers Administration Tools
 
 This playbook will add disk space to the root logical volume part of vg01.   
 It will also resize the / file system.  
-Note: The value of /dev/sda and vg01 are hardcoded in the playbook. Edit when required.
+Note: The value of /dev/sda and vg01 are hardcoded as vars in the playbook. Edit when required.
 
 ## Step1: Increase the Disk Size of the Virtual Machine
 
@@ -30,7 +30,13 @@ git clone https://github.com/ericmsh/linux-adm-tools.git
 cd linux-adm-tools
 ```
 
-## Step3: Run the playbook
+## Step3: Install ansible locally (only if the playbook is run from the server itself)
+```
+yum install -y ansible-core
+ansible-galaxy collection install community.general
+```
+
+## Step4: Run the playbook
 ```
 ansible-playbook -i inventory add-disk-space.yml
 ```
