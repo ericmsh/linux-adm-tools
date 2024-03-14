@@ -17,7 +17,7 @@ Increase the disk space of the main OS disk using the Proxmox or VMware console.
 
 On the server itself, as root user, clone the repo:  
 ```
-git clone git@github.com:ericmsh/linux-adm-tools.git
+git clone https://github.com/ericmsh/linux-adm-tools.git
 cd linux-adm-tools
 ```
 
