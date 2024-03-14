@@ -13,14 +13,13 @@ Note: The value of /dev/sda and vg01 are hardcoded in the playbook. Edit when re
 
 Check the disk size on the server:  
 ```
-fdisk /dev/sda
+fdisk -l /dev/sda
 ```
 
 Increase the disk space of the main OS disk using the Proxmox or VMware console.  
-
 Check the disk size to make sure additional space has been added:  
 ```
-fdisk /dev/sda
+fdisk -l /dev/sda
 ```
 
 ## Step2: Clone repo

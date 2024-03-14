@@ -3,37 +3,37 @@
   hosts: localhost
   user: root
   tasks:
-  - name: Fix disc space
-    hosts: all
-    tasks:
-      - name: Read device information (always use unit when probing)
-        community.general.parted:
-          device: /dev/sda
-          unit: s
-        register: sda_info
+    - name: Fix disc space
+      hosts: all
+      tasks:
+        - name: Read device information (always use unit when probing)
+          community.general.parted:
+            device: /dev/sda
+            unit: s
+          register: sda_info
+      
+        - name: Output info
+          debug:
+            var: sda_info
+      
+        - name: Extend an existing partition to fill all available space
+          community.general.parted:
+            device: /dev/sda
+            number: "{{ sda_info.partitions | length }}"
+            part_start: "100%"
+            resize: true
+            state: present
     
-      - name: Output info
-        debug:
-          var: sda_info
+        - name: Extending the Volume Group and resize the pv
+          community.general.lvg:
+            vg: vg01
+            pvs: /dev/sda{{ sda_info.partitions | length }}
+            pvresize: yes
     
-      - name: Extend an existing partition to fill all available space
-        community.general.parted:
-          device: /dev/sda
-          number: "{{ sda_info.partitions | length }}"
-          part_start: "100%"
-          resize: true
-          state: present
+        - name: Increasing the filesystems
+          community.general.lvol:
+            vg: vg01
+            lv: root
+            size: +100%FREE
+            resizefs: true
   
-      - name: Extending the Volume Group and resize the pv
-        community.general.lvg:
-          vg: vg01
-          pvs: /dev/sda{{ sda_info.partitions | length }}
-          pvresize: yes
-  
-      - name: Increasing the filesystems
-        community.general.lvol:
-          vg: vg01
-          lv: root
-          size: +100%FREE
-          resizefs: true
-
